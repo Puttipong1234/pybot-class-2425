@@ -1,0 +1,42 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © PuttipongAutomateTrader
+
+//@version=5
+indicator("2425-lesson01-simple-ema",overlay = true)
+
+ema9 =  ta.ema(close,9)
+ema26 = ta.ema(close,26)
+ema200 = ta.ema(close,200)
+
+plot(ema9,color = color.lime)
+plot(ema26,color = color.red)
+plot(ema200,color = color.rgb(255, 235, 59, 50),linewidth = 3)
+
+sellzone = ta.crossunder(ema9,ema26)
+plotchar(sellzone,title = "Is SellZone",char = "▼",color = color.rgb(255, 168, 130),location = location.abovebar,size = size.normal)
+
+ph = ta.pivothigh(10, 10)
+pl = ta.pivotlow(10, 10)
+
+drawLabel(_offset, _pivot, _style, _color, _textColor) =>
+    if not na(_pivot)
+        label.new(bar_index[_offset], _pivot, str.tostring(_pivot, format.mintick), style=_style, color=_color, textcolor=_textColor)
+
+//drawLabel(10, ph, label.style_label_down, color.gray, color.white)
+//drawLabel(10, pl, label.style_label_up, color.gray, color.white)
+
+up = ta.rma(math.max(ta.change(close), 0), 336)
+down = ta.rma(-math.min(ta.change(close), 0), 336)
+rsi = down == 0 ? 100 : up == 0 ? 0 : 100 - (100 / (1 + up / down))
+rsiMA = ta.ema(rsi, 336)
+
+bool is_rsi_uptrend = false
+
+if(rsi>rsiMA)
+    is_rsi_uptrend := true
+
+bgcolor( is_rsi_uptrend ? color.rgb(76, 175, 79, 80) : color.rgb(255, 82, 82, 80) )
+    
+
+actionzone = ta.crossover(ema9,ema26) and close > ema200 and is_rsi_uptrend
+plotchar(actionzone,title = "Is ActionZone",char = "▲",color = color.lime,location = location.belowbar,size = size.normal)
